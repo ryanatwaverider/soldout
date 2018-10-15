@@ -47,5 +47,12 @@
     <version>1.2.3</version>
     <scope>test</scope>
 </dependency>
+<dependency>
+    <artifactId>..</artifactId>
+    <groupId>..</groupId>
+    <version>0.1.0</version>
+    <scope>system</scope>
+    <systemPath>${basedir}/lib/sdk-0.1.0.jar</systemPath>
+</dependency>
   </dependencies>
 </project>

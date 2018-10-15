@@ -28,8 +28,8 @@ public class ChronicleWriter {
 	private IndexedChronicle chronicle;
 	private Excerpt excerpt;
 	
-	public ChronicleWriter(String chronicleName){
-		this.chronicleName = chronicleName;
+	public ChronicleWriter(String name){
+		this.chronicleName = basePathForChronicle + "/" + name;
 		try {
 			File f = new File(chronicleName);
 			if(f.exists()) {

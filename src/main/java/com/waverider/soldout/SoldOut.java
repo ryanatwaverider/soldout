@@ -1,43 +1,45 @@
 package com.waverider.soldout;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import com.waverider.soldout.entities.AccessTokenListing;
 import com.waverider.soldout.entities.AccessTokenSale;
 import com.waverider.soldout.entities.EventAccessToken;
 import com.waverider.soldout.entities.LiveEvent;
+import com.waverider.soldout.entities.SoldOutEntity;
 import com.waverider.soldout.entities.TokenOwner;
 import com.waverider.soldout.messages.ActionType;
 import com.waverider.soldout.messages.SoldOutEntityUpdate;
 
-public class SoldOut {
+public class SoldOut implements ChronicleSubscriber {
 	
-	ChronicleWriter tokenChronicler = new ChronicleWriter("EventAccessTokens");
-	ChronicleWriter tokenListingsChronicler = new ChronicleWriter("AccessTokenListings");
+	ChronicleWriter accessTokenChronicler = new ChronicleWriter("EventAccessTokens");
+	ChronicleWriter listingsChronicler = new ChronicleWriter("AccessTokenListings");
 	
 	public SoldOut(){
 		
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 
 		
 		SoldOut so = new SoldOut();
+		LiveEvent event = so.createEvent();
 		
 		if (args[0].contentEquals("CreateEvent")){
-			so.createEvent();
-			// TODO publish events, tokens, and listings!
+			so.createSeatsAndListings(event);
 		}
 		else {
-			so.fetchEventsAndListings();
+			so.fetchEventsAndListings(event);
 		}
 	}
 
-	private void fetchEventsAndListings() {
+	private void fetchEventsAndListings(LiveEvent event) throws IOException {
 		// TODO query the system for existing events and listings
 		// also need to query for the full tree of transactions per accessToken
-		
+		accessTokenChronicler.runReadLoopToEnd(this);
 		
 		
 	}
@@ -52,9 +54,13 @@ public class SoldOut {
 		tokensByEvent.put(event.getId(), new HashMap<String,EventAccessToken>());
 	}
 	
-	private void createEvent() {
+	private LiveEvent createEvent(){
 		LiveEvent event = new LiveEvent("Lady Gaga", "2018-11-05", "United Center", "Chicago");
 		addEvent(event);
+		return event;
+	}
+	
+	private void createSeatsAndListings(LiveEvent event) {
 		
 		TokenOwner owner = new TokenOwner("Vendor_UC_Chicago");
 
@@ -79,7 +85,7 @@ public class SoldOut {
 				token = new EventAccessToken(event.getId(), row, seat, level, initialOwner);
 				
 				SoldOutEntityUpdate sou = new SoldOutEntityUpdate(token,ActionType.CREATE_ENTITY);
-				tokenChronicler.writeEntity(sou);
+				accessTokenChronicler.writeEntity(sou);
 
 				tokens.put(token.getId(),token);
 				publishListing(token.createListing(initialOwner, listingPrice));
@@ -92,7 +98,7 @@ public class SoldOut {
 		
 		
 		SoldOutEntityUpdate sou = new SoldOutEntityUpdate(listing,ActionType.CREATE_ENTITY);
-		tokenListingsChronicler.writeEntity(sou);
+		listingsChronicler.writeEntity(sou);
 		
 		// TODO publish this information out
 	}
@@ -148,6 +154,26 @@ public class SoldOut {
 		// TODO move money between accounts
 		// this is a hedera thing
 		
+	}
+
+	public void onMessage(SoldOutEntityUpdate message) {
+		// TODO Auto-generated method stub
+		SoldOutEntity soe = message.getEntity();
+		
+		
+		switch (soe.getEntityType()){
+		case EVENT_ACCESS_TOKEN:
+			EventAccessToken accessToken = (EventAccessToken)message.getEntity();
+			break;
+		case ACCESS_TOKEN_LISTING:
+			break;
+		case ACCESS_TOKEN_SALE:
+			break;
+		case LIVE_EVENT:
+			break;
+		case TOKEN_OWNER:
+			break;
+		}
 	}
 
 }
