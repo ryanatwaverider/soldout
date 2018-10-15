@@ -20,59 +20,13 @@ import com.hedera.sdk.cryptography.HederaCryptoKeyPair;
 import com.hedera.sdk.node.HederaNode;
 import com.hedera.sdk.transaction.HederaTransactionResult;
 
+import org.apache.commons.codec.net.QCodec;
+
 public final class HelloFuture {
 
 	public static void main (String[] args) {
 
-		// node details
-		String nodeAddress = "localhost";
-		int nodePort = 50211;
-		
-		// these are loaded from config.properties below
-		long nodeAccountShard = 0;
-		long nodeAccountRealm = 0;
-		long nodeAccountNum = 0;
-		// your account details
-		long payAccountShard = 0;
-		long payAccountRealm = 0;
-		long payAccountNum = 0;
-		// you public and private keys
-		String pubKey = "";
-		String privKey = "";
-		
-		// load application properties
-		Properties applicationProperties = new Properties();
-		InputStream propertiesInputStream = null;
-			
-		try {
-			propertiesInputStream = new FileInputStream("config.properties");
-			// load a properties file
-			applicationProperties.load(propertiesInputStream);
-			// get the node's account values
-			nodeAccountShard = Long.parseLong(applicationProperties.getProperty("nodeAccountShard"));
-			nodeAccountRealm = Long.parseLong(applicationProperties.getProperty("nodeAccountRealm"));
-			nodeAccountNum = Long.parseLong(applicationProperties.getProperty("nodeAccountNum"));
-			
-			// get my public/private keys
-			pubKey = applicationProperties.getProperty("pubkey");
-			privKey = applicationProperties.getProperty("privkey");
-
-			// get my account details
-			payAccountShard = Long.parseLong(applicationProperties.getProperty("payingAccountShard"));
-			payAccountRealm = Long.parseLong(applicationProperties.getProperty("payingAccountRealm"));
-			payAccountNum = Long.parseLong(applicationProperties.getProperty("payingAccountNum"));
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			if (propertiesInputStream != null) {
-				try {
-					propertiesInputStream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		SoldOutConfig config = new SoldOutConfig();
 
 		// setup defaults for transactions and Queries 
 		HederaTransactionAndQueryDefaults txQueryDefaults = new HederaTransactionAndQueryDefaults();
@@ -81,14 +35,14 @@ public final class HelloFuture {
 		txQueryDefaults.memo = "Hello Future";
 		
 		// setup the node we're communicating with from the properties loaded above
-		txQueryDefaults.node = new HederaNode(nodeAddress, nodePort, new HederaAccountID(nodeAccountShard, nodeAccountRealm, nodeAccountNum));
+		txQueryDefaults.node = config.getHederaNode();
 		
 		// setup the paying account ID (got from the properties loaded above)
-		txQueryDefaults.payingAccountID = new HederaAccountID(payAccountShard, payAccountRealm, payAccountNum);
+		txQueryDefaults.payingAccountID = config.getRootAccountId();
 
 		// setup the paying key pair (got from properties loaded above)
 		try {
-			txQueryDefaults.payingKeyPair = new HederaCryptoKeyPair(KeyType.ED25519, pubKey, privKey);
+			txQueryDefaults.payingKeyPair = config.getRootKeyPair();
 		} catch (InvalidKeySpecException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -130,7 +84,8 @@ public final class HelloFuture {
 								, startingBalance, defaults);
 			
 			// was it successful ?
-			if (createResult.getPrecheckResult() == HederaPrecheckResult.OK) {
+			HederaPrecheckResult precheckResult = createResult.getPrecheckResult();
+			if ( precheckResult == HederaPrecheckResult.OK) {
 				
 				// yes, get a receipt for the transaction
 				HederaTransactionReceipt receipt = Utilities.getReceipt(myNewAccount.hederaTransactionID, myNewAccount.txQueryDefaults.node);
@@ -148,7 +103,7 @@ public final class HelloFuture {
 					
 					myNewAccount.getBalance();
 					
-					HederaAccountID toAccountID = new HederaAccountID(nodeAccountShard, nodeAccountRealm, nodeAccountNum);
+					HederaAccountID toAccountID = config.getRootAccountId();
 					myNewAccount.send(toAccountID, 20);
 					
 					Thread.sleep(1000);
