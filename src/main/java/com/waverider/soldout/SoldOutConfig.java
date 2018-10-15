@@ -30,6 +30,9 @@ public class SoldOutConfig {
 	public String[] accountPublicKey = null;
 	public String[] accountPrivateKey = null;
 
+	// Other simulation parameters
+	public long initialBalance = 0;
+
 	public SoldOutConfig() {
 		Properties properties = new Properties();
 		InputStream inputStream = null;
@@ -48,8 +51,11 @@ public class SoldOutConfig {
 			rootPubKey = properties.getProperty("rootPubkey");
 			rootPrivKey = properties.getProperty("rootPrivkey");
 
-			int count = 0;
+			// Get other simulation Values
+			initialBalance = Long.parseLong(properties.getProperty("initialBalance"));
 
+			// Load Array of accounts
+			int count = 0;
 			while (properties.getProperty("account" + count + "_pubkey") != null) {
 				count++;
 			}
