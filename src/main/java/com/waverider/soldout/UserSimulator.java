@@ -27,7 +27,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 	private TokenOwner tokenOwner;
 	private GlobalInformationProvider informationRelayer;
 	private String profile;
-	private OfInt delayIterator;
+	private IntStream eventDelays;
 	private Random random;
 
 	public UserSimulator(TokenOwner tokenOwner, GlobalInformationProvider informationRelayer, String profile){
@@ -43,7 +43,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		
 		if (profile.contentEquals("Speculator")){
 //			eventDelays = random.ints(500, 8000, 12000);
-			eventDelays = random.ints(500, 2000, 2800);
+			eventDelays = random.ints(2000, 2800);
 		}
 		else if (profile.contentEquals("Professional")){
 //			eventDelays = random.ints(500, 4000, 6000);
@@ -53,7 +53,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		}
 		else if (profile.contentEquals("Attendee")) {
 //			eventDelays = random.ints(200, 28000, 42000);
-			eventDelays = random.ints(200, 8000, 12000);
+			eventDelays = random.ints(8000, 12000);
 			isBuyer = true;
 			isSellerForLoss = true;
 		}
@@ -76,11 +76,13 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 					(ownedTokens.size()<5)) && tokenOwner.getWalletBalance()>100.0d){
 				AccessTokenListing listing = informationRelayer.getRandomListing();
 //				EventAccessToken accessToken = informationRelayer.getAccessTokenFor(listing.getEventId(), listing.getEventAccessTokenId());
-				informationRelayer.purchaseListing(listing, tokenOwner);
-				lastEvent = Event.BUY;
+				AccessTokenSale sale = informationRelayer.purchaseListing(listing, tokenOwner);
+				if (sale!=null){
+					lastEvent = Event.BUY;
+				}
 			}
 			else {
-				if (ownedTokens.size()>0){
+				if (ownedTokens.size()>0 && ownedTokens.size()<50){
 					int idx = random.nextInt(ownedTokens.size());
 					String[] a = new String[ownedTokens.size()];
 					ownedTokens.keySet().toArray(a);
@@ -101,7 +103,8 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 			informationRelayer.scheduleEvent(this,(long)delayIterator.next());
 		}
 	};
-	private IntStream eventDelays;
+
+	private OfInt delayIterator;
 
 	public void onNewMessage(SoldOutEntityUpdate entityUpdateMessage) {
 		switch (entityUpdateMessage.getEntity().getEntityType()){

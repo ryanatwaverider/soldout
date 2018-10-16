@@ -36,10 +36,12 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 	LinkedBuffer lb = LinkedBuffer.allocate(4096);
 
 	private ArrayList<UserSimulator> simulators = new ArrayList<UserSimulator>();
-
-	private IntStream listingSearchInts;
-
 	private OfInt randomIter;
+	private IntStream randomInts;
+
+	private final UserInterface userInterface;
+
+	
 	
 	
 	public SoldOut(){
@@ -47,8 +49,12 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 
 		random = new Random(System.currentTimeMillis());
 		
-		listingSearchInts = random.ints(1000, 0, 100);
-		randomIter = listingSearchInts.iterator();
+		randomInts = random.ints(0, 100);
+		randomIter = randomInts.iterator();
+		
+		//randomIter = listingSearchInts.iterator();
+		
+		userInterface = new UserInterface(this);
 
 	}
 
@@ -174,7 +180,11 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		SoldOutEntityUpdate sou = new SoldOutEntityUpdate(listing,ActionType.CREATE_ENTITY);
 		//listingsChronicler.writeEntity(sou);
 		
-		logger.info("Just published listing for: " + listing.getEventAccessTokenId() + " at price " + listing.getListingPrice());
+		HashMap<String, EventAccessToken> tokens = tokensByEvent.get(listing.getEventId());
+		EventAccessToken accessToken = tokens.get(listing.getEventAccessTokenId());
+		
+		logger.info(accessToken.getCurrentOwner().getIdentity() + " Just published listing for: " + listing.getEventAccessTokenId() + 
+				" at price " + listing.getListingPrice());
 		
 		// TODO publish this information out
 	}
@@ -318,6 +328,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		for (UserSimulator sim : simulators){
 			sim.onNewMessage(soeu);
 		}
+		userInterface.onNewMessage(soeu);
 	}
 
 	public void scheduleEvent(Runnable r, long delayInMillis) {
