@@ -303,9 +303,9 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			
 			logger.info(sale.getBuyer().getIdentity() +  " Just bought: " + listing.getEventAccessTokenId() + " at price " + listing.getListingPrice() + 
 					" from " + sale.getSeller().getIdentity());
-			// logger.info(sale.getBuyer().getIdentity() + " Balance is now " + sale.getBuyer().getWalletBalance());
-			// logger.info(sale.getSeller().getIdentity() + " Balance is now " + sale.getSeller().getWalletBalance());
-			// logger.info("Vendor named " + token.getVendor().getIdentity() + " balance is now " + token.getVendor().getWalletBalance());
+			logger.info(sale.getBuyer().getIdentity() + " Balance is now " + sale.getBuyer().getWalletBalance());
+			logger.info(sale.getSeller().getIdentity() + " Balance is now " + sale.getSeller().getWalletBalance());
+			logger.info("Vendor named " + token.getVendor().getIdentity() + " balance is now " + token.getVendor().getWalletBalance());
 			return sale;
 	}
 

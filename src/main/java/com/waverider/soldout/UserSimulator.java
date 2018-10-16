@@ -42,18 +42,18 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		this.random = random;
 		
 		if (profile.contentEquals("Speculator")){
-//			eventDelays = random.ints(500, 8000, 12000);
-			eventDelays = random.ints(2000, 2800);
+			eventDelays = random.ints(500, 8000, 12000);
+//			eventDelays = random.ints(2000, 2800);
 		}
 		else if (profile.contentEquals("Professional")){
-//			eventDelays = random.ints(500, 4000, 6000);
-			eventDelays = random.ints(500, 1000, 1300);
+			eventDelays = random.ints(500, 4000, 6000);
+//			eventDelays = random.ints(500, 1000, 1300);
 			isBuyer = true;
 			isSellerForProfit = true;
 		}
 		else if (profile.contentEquals("Attendee")) {
-//			eventDelays = random.ints(200, 28000, 42000);
-			eventDelays = random.ints(8000, 12000);
+			eventDelays = random.ints(200, 28000, 42000);
+//			eventDelays = random.ints(8000, 12000);
 			isBuyer = true;
 			isSellerForLoss = true;
 		}
