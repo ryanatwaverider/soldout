@@ -17,4 +17,5 @@ public interface GlobalInformationProvider {
 
 	public void publishListing(AccessTokenListing createListing);
 
+	public AccessTokenListing getListingFor(String accessTokenId);
 }

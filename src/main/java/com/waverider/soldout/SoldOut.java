@@ -1,6 +1,7 @@
 package com.waverider.soldout;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PrimitiveIterator.OfInt;
@@ -10,6 +11,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
+
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,30 +40,56 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 	ChronicleWriter listingsChronicler = new ChronicleWriter("AccessTokenListings");
 	LinkedBuffer lb = LinkedBuffer.allocate(4096);
 
-	private ArrayList<UserSimulator> simulators = new ArrayList<UserSimulator>();
+	private ArrayList<SoldOutEntityUpdateSubscriber> updateSubscribers = new ArrayList<SoldOutEntityUpdateSubscriber>();
 	private OfInt randomIter;
 	private IntStream randomInts;
 
-	private final UserInterface userInterface;
+	private UserInterface userInterface;
 
 	
 	
 	
-	public SoldOut(){
+	public SoldOut() throws InvocationTargetException, InterruptedException{
 		scheduler = Executors.newSingleThreadScheduledExecutor();
 
 		random = new Random(System.currentTimeMillis());
 		
 		randomInts = random.ints(0, 100);
 		randomIter = randomInts.iterator();
-		
-		//randomIter = listingSearchInts.iterator();
-		
-		userInterface = new UserInterface(this);
+		SwingUtilities.invokeAndWait(new Runnable() {
+			public void run() {
+				userInterface = new UserInterface(SoldOut.this);
+				userInterface.pack();
+			}
+		});
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//			}
+//		});
+		updateSubscribers.add(userInterface);
 
 	}
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException, InvocationTargetException {
+		try {
+            // Set System L&F
+        UIManager.setLookAndFeel(
+            UIManager.getSystemLookAndFeelClassName());
+    } 
+    catch (UnsupportedLookAndFeelException e) {
+       // handle exception
+    }
+    catch (ClassNotFoundException e) {
+       // handle exception
+    }
+    catch (InstantiationException e) {
+       // handle exception
+    }
+    catch (IllegalAccessException e) {
+       // handle exception
+    }
+
+		
 		SoldOut so = new SoldOut();
 		LiveEvent event = so.createEvent();
 		so.createSeatsAndListings(event);
@@ -81,8 +112,8 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 	
 
 	private void startSimulation() {
-		for (UserSimulator sim : simulators){
-			sim.startSimulation(random);
+		for (SoldOutEntityUpdateSubscriber sim : updateSubscribers){
+			sim.start(random);
 		}
 	}
 
@@ -91,23 +122,27 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		TokenOwner to = new TokenOwner("Alice");
 		tokenOwners.put(to.getIdentity(),to);
 		UserSimulator sim = new UserSimulator(to,this,"Speculator");
-		simulators.add(sim);
+		updateSubscribers.add(sim);
 		
 		to = new TokenOwner("TicketScam");
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Professional");
-		simulators.add(sim);
+		updateSubscribers.add(sim);
 
 		to = new TokenOwner("Bob");
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Attendee");
-		simulators.add(sim);
+		updateSubscribers.add(sim);
 
 		to = new TokenOwner("ScalperJoe");
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Professional");
-		simulators.add(sim);
+		updateSubscribers.add(sim);
 
+		to = new TokenOwner("Betty");
+		tokenOwners.put(to.getIdentity(),to);
+		sim = new UserSimulator(to,this,"Speculator");
+		updateSubscribers.add(sim);
 	}
 
 	private void fetchEventsAndListings(LiveEvent event) throws IOException {
@@ -145,26 +180,30 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		tokenOwners.put(owner.getIdentity(),owner);
 
 		String level = "Floor";
-		createSeatsForEvent(event,level,2,10, owner, 75.0d);
+		createSeatsForEvent(event,level,maxRowCount,2,10, owner, 75.0d);
 
 		level = "Main";
-		createSeatsForEvent(event,level,10,10, owner, 50.0d);
+		createSeatsForEvent(event,level,maxRowCount,4,10, owner, 50.0d);
 		
 		level = "Balcony";
-		createSeatsForEvent(event,level,5,10, owner, 25.0d);
+		createSeatsForEvent(event,level, maxRowCount,3,10, owner, 25.0d);
 	}
 
-	private void createSeatsForEvent(LiveEvent event, String level, int rows, int seats, 
+	int maxRowCount=0;
+	private void createSeatsForEvent(LiveEvent event, String level,int firstRow, int rows, int seats, 
 			TokenOwner initialOwner, double listingPrice) {
 		EventAccessToken token;
 
 		HashMap<String, EventAccessToken> tokens = tokensByEvent.get(event.getId());
 		
-		for (int row=0;row<rows;row++){
+		for (int row=firstRow;row<rows+firstRow;row++){
+			maxRowCount++;
 			for (int seat=0;seat<seats;seat++){
 				token = new EventAccessToken(event.getId(), row, seat, level, initialOwner);
 				
-				SoldOutEntityUpdate sou = new SoldOutEntityUpdate(token,ActionType.CREATE_ENTITY);
+				
+				sendUpdateToSubscribers(token,ActionType.CREATE_ENTITY);
+				//SoldOutEntityUpdate sou = new SoldOutEntityUpdate(token,ActionType.CREATE_ENTITY);
 				//accessTokenChronicler.writeEntity(sou);
 
 				tokens.put(token.getId(),token);
@@ -177,7 +216,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		listingsByAccessToken.put(listing.getEventAccessTokenId(),listing);
 		
 		
-		SoldOutEntityUpdate sou = new SoldOutEntityUpdate(listing,ActionType.CREATE_ENTITY);
+		//SoldOutEntityUpdate sou = new SoldOutEntityUpdate(listing,ActionType.CREATE_ENTITY);
 		//listingsChronicler.writeEntity(sou);
 		
 		HashMap<String, EventAccessToken> tokens = tokensByEvent.get(listing.getEventId());
@@ -186,31 +225,10 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		logger.info(accessToken.getCurrentOwner().getIdentity() + " Just published listing for: " + listing.getEventAccessTokenId() + 
 				" at price " + listing.getListingPrice());
 		
-		// TODO publish this information out
+		
+		sendUpdateToSubscribers(listing,ActionType.CREATE_ENTITY);
 	}
 	
-	
-	/**
-	 *
-	 * @param buyer
-	 * @param listing
-	 * @param listingId
-	 * @return
-	 * 
-	 */
-	private AccessTokenSale purchaseAccessToken(TokenOwner buyer, AccessTokenListing listing, int listingId){
-		if (listing.getListingId()==listingId){
-			HashMap<String, EventAccessToken> tokensForEvent = tokensByEvent.get(listing.getEventId());
-			EventAccessToken token = tokensForEvent.get(listing.getEventAccessTokenId());
-			AccessTokenSale sale = token.createSale(buyer,listing);
-			
-			doMoneyTranfersForSale(sale, token);
-			return sale;
-		}
-		else {
-			return null;
-		}
-	}
 	
 	private final double VENDOR_SPLIT_PERCENT = 0.5d;
 
@@ -277,7 +295,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			break;
 		}
 		
-		for (UserSimulator sim : simulators){
+		for (SoldOutEntityUpdateSubscriber sim : updateSubscribers){
 			sim.onNewMessage(message);
 		}
 	}
@@ -286,7 +304,8 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		Set<String> keys = listingsByAccessToken.keySet();
 		String[] strings = new String[keys.size()];
 		keys.toArray(strings);
-		Integer index = randomIter.next();
+		
+		Integer index = random.nextInt(keys.size());//randomIter.next();
 		String key;
 		if (index<keys.size()){
 			key = strings[index];
@@ -312,8 +331,13 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			}
 			
 			doMoneyTranfersForSale(sale, token);
-			updateSimulators(sale);
-			updateSimulators(token);
+
+			listingsByAccessToken.remove(listing.getEventAccessTokenId());
+
+			sendUpdateToSubscribers(sale,ActionType.CREATE_ENTITY);
+			sendUpdateToSubscribers(token,ActionType.UPDATE_ENTITY);
+			
+			sendUpdateToSubscribers(listing,ActionType.DESTROY_ENTITY);
 			
 			logger.info(sale.getBuyer().getIdentity() +  " Just bought: " + listing.getEventAccessTokenId() + " at price " + listing.getListingPrice() + 
 					" from " + sale.getSeller().getIdentity());
@@ -323,17 +347,21 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			return sale;
 	}
 
-	private void updateSimulators(SoldOutEntity entity) {
-		SoldOutEntityUpdate soeu = new SoldOutEntityUpdate(entity,ActionType.CREATE_ENTITY);
-		for (UserSimulator sim : simulators){
+	private void sendUpdateToSubscribers(SoldOutEntity entity, ActionType action) {
+		SoldOutEntityUpdate soeu = new SoldOutEntityUpdate(entity,action);
+		for (SoldOutEntityUpdateSubscriber sim : updateSubscribers){
 			sim.onNewMessage(soeu);
 		}
-		userInterface.onNewMessage(soeu);
 	}
 
 	public void scheduleEvent(Runnable r, long delayInMillis) {
 		//logger.info("scheduling in " + delayInMillis);
 		scheduler.schedule(r, delayInMillis, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public AccessTokenListing getListingFor(String accessTokenId) {
+		return listingsByAccessToken.get(accessTokenId);
 	}
 
 }

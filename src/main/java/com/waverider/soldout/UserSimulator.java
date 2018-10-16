@@ -36,24 +36,26 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		this.profile = profile;
 	}
 
-	public void startSimulation(Random random){
+	public void start(Random random){
 		
 		
 		this.random = random;
 		
 		if (profile.contentEquals("Speculator")){
-//			eventDelays = random.ints(500, 8000, 12000);
-			eventDelays = random.ints(2000, 2800);
+			eventDelays = random.ints(500, 8000, 12000);
+//			eventDelays = random.ints(2000, 2800);
+			isBuyer=true;
+			isSellerForProfit = true;
 		}
 		else if (profile.contentEquals("Professional")){
-//			eventDelays = random.ints(500, 4000, 6000);
-			eventDelays = random.ints(500, 1000, 1300);
+			eventDelays = random.ints(500, 4000, 6000);
+//			eventDelays = random.ints(500, 1000, 1300);
 			isBuyer = true;
 			isSellerForProfit = true;
 		}
 		else if (profile.contentEquals("Attendee")) {
-//			eventDelays = random.ints(200, 28000, 42000);
-			eventDelays = random.ints(8000, 12000);
+			eventDelays = random.ints(200, 28000, 42000);
+//			eventDelays = random.ints(8000, 12000);
 			isBuyer = true;
 			isSellerForLoss = true;
 		}
@@ -73,7 +75,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		public void run(){
 			if (isBuyer && (lastEvent!=Event.BUY || 
 					(profile.equals("Professional") && ownedTokens.size()<20) ||
-					(ownedTokens.size()<5)) && tokenOwner.getWalletBalance()>100.0d){
+					(ownedTokens.size()<3)) && tokenOwner.getWalletBalance()>150.0d){
 				AccessTokenListing listing = informationRelayer.getRandomListing();
 //				EventAccessToken accessToken = informationRelayer.getAccessTokenFor(listing.getEventId(), listing.getEventAccessTokenId());
 				AccessTokenSale sale = informationRelayer.purchaseListing(listing, tokenOwner);
@@ -82,7 +84,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 				}
 			}
 			else {
-				if (ownedTokens.size()>0 && ownedTokens.size()<50){
+				if (ownedTokens.size()>0 && ownedTokens.size()<40){
 					int idx = random.nextInt(ownedTokens.size());
 					String[] a = new String[ownedTokens.size()];
 					ownedTokens.keySet().toArray(a);
@@ -90,11 +92,11 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 					
 					EventAccessToken token = ownedTokens.get(tokenId);
 					if (isSellerForProfit){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*1.2));
+						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*1.3));
 						lastEvent = Event.SELLFORPROFIT;
 					}
 					else if (isSellerForLoss){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*.8));
+						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*.7));
 						lastEvent = Event.SELLFORLOSS;
 					}
 				}

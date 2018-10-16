@@ -25,7 +25,7 @@ public class TokenOwner extends SoldOutEntity  {
 	public TokenOwner(String identity) {
 		super(EntityType.TOKEN_OWNER);
 		this.identity = identity;
-		this.walletBalance = 1000d;
+		this.walletBalance = 5000d;
 	}
 
 	public void decrementAccountBy(double salePrice) {
