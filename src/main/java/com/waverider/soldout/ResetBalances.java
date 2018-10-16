@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import com.hedera.sdk.account.HederaAccount;
 import com.hedera.sdk.common.HederaAccountID;
 import com.hedera.sdk.common.HederaPrecheckResult;
-import com.hedera.sdk.common.HederaTransactionID;
 import com.hedera.sdk.common.HederaTransactionReceipt;
 import com.hedera.sdk.common.HederaTransactionStatus;
 import com.hedera.sdk.common.Utilities;
