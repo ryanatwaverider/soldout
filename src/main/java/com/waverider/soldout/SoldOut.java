@@ -145,17 +145,17 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		tokenOwners.put(owner.getIdentity(),owner);
 
 		String level = "Floor";
-		createSeatsForEvent(event,level,2,10, owner, 75.0d);
+		createSeatsForEvent(event,level,2,10, owner, 75);
 
 		level = "Main";
-		createSeatsForEvent(event,level,10,10, owner, 50.0d);
+		createSeatsForEvent(event,level,10,10, owner, 50);
 		
 		level = "Balcony";
-		createSeatsForEvent(event,level,5,10, owner, 25.0d);
+		createSeatsForEvent(event,level,5,10, owner, 25);
 	}
 
 	private void createSeatsForEvent(LiveEvent event, String level, int rows, int seats, 
-			TokenOwner initialOwner, double listingPrice) {
+			TokenOwner initialOwner, long listingPrice) {
 		EventAccessToken token;
 
 		HashMap<String, EventAccessToken> tokens = tokensByEvent.get(event.getId());
@@ -219,14 +219,14 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 	private void doMoneyTranfersForSale(AccessTokenSale sale, EventAccessToken token) {
 		// First take would be to give all the money to the seller, but then the magic 
 		// comes in
-		double lastSalePrice = token.getLastSalePrice();
-		double salePrice = sale.getSalePrice();
+		long lastSalePrice = token.getLastSalePrice();
+		long salePrice = sale.getSalePrice();
 		
-		double profit = salePrice-lastSalePrice;
-		double basis = lastSalePrice;
+		long profit = salePrice-lastSalePrice;
+		long basis = lastSalePrice;
 		if (profit>0.0d){
-			double vendorAmt = profit*VENDOR_SPLIT_PERCENT; // this is variable
-			double sellerAmt = salePrice - vendorAmt;
+			long vendorAmt = (long)((double)profit*VENDOR_SPLIT_PERCENT); // this is variable
+			long sellerAmt = salePrice - vendorAmt;
 			transferMoney(sale.getBuyer(),sale.getSeller(),basis+sellerAmt);
 			transferMoney(sale.getBuyer(),token.getVendor(),vendorAmt);
 		}
@@ -236,7 +236,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		
 	}
 
-	private void transferMoney(TokenOwner buyer, TokenOwner seller, double salePrice) {
+	private void transferMoney(TokenOwner buyer, TokenOwner seller, long salePrice) {
 		// TODO move money between accounts
 		// this is a hedera thing
 		buyer.decrementAccountBy(salePrice);

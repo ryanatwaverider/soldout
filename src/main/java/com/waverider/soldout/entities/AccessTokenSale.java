@@ -11,7 +11,7 @@ public class AccessTokenSale extends SoldOutEntity {
 	private final TokenOwner seller;
 	
 	@Tag(22)
-	private final double salePrice;
+	private final long salePrice;
 	
 	@Tag(23)
 	private final String tokenId;
@@ -27,7 +27,7 @@ public class AccessTokenSale extends SoldOutEntity {
 		return eventId;
 	}
 
-	public AccessTokenSale(TokenOwner buyer, TokenOwner currentOwner, double listingPrice, String tokenId, String eventId) {
+	public AccessTokenSale(TokenOwner buyer, TokenOwner currentOwner, long listingPrice, String tokenId, String eventId) {
 		super(EntityType.ACCESS_TOKEN_SALE);
 		
 		this.buyer = buyer;
@@ -45,7 +45,7 @@ public class AccessTokenSale extends SoldOutEntity {
 		return seller;
 	}
 
-	public double getSalePrice() {
+	public long getSalePrice() {
 		return salePrice;
 	}
 

@@ -10,7 +10,7 @@ public class AccessTokenListing extends SoldOutEntity{
 		return eventAccessTokenId;
 	}
 
-	public double getListingPrice() {
+	public long getListingPrice() {
 		return listingPrice;
 	}
 
@@ -30,12 +30,12 @@ public class AccessTokenListing extends SoldOutEntity{
 	private final String eventId;
 	
 	@Tag(202)
-	private final double listingPrice;
+	private final long listingPrice;
 	
 	@Tag(203)
 	private final int listingId;
 
-	public AccessTokenListing(int listingId, String eventId, String eventAccessTokenId, double price) {
+	public AccessTokenListing(int listingId, String eventId, String eventAccessTokenId, long price) {
 		super(EntityType.ACCESS_TOKEN_LISTING);
 		
 		this.eventId=eventId;

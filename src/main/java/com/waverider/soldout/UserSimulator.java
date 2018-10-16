@@ -90,11 +90,11 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 					
 					EventAccessToken token = ownedTokens.get(tokenId);
 					if (isSellerForProfit){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*1.2));
+						informationRelayer.publishListing(token.createListing(tokenOwner, (long)((double)token.getLastSalePrice()*1.2)));
 						lastEvent = Event.SELLFORPROFIT;
 					}
 					else if (isSellerForLoss){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*.8));
+						informationRelayer.publishListing(token.createListing(tokenOwner, (long)((double)token.getLastSalePrice()*.8)));
 						lastEvent = Event.SELLFORLOSS;
 					}
 				}

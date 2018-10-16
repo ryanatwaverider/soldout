@@ -12,27 +12,27 @@ public class TokenOwner extends SoldOutEntity  {
 	final private String identity;
 	
 	@Tag(101)
-	double walletBalance;
+	long walletBalance;
 
-	public double getWalletBalance() {
+	public long getWalletBalance() {
 		return walletBalance;
 	}
 
-	public void setWalletBalance(double walletBalance) {
+	public void setWalletBalance(long walletBalance) {
 		this.walletBalance = walletBalance;
 	}
 
 	public TokenOwner(String identity) {
 		super(EntityType.TOKEN_OWNER);
 		this.identity = identity;
-		this.walletBalance = 1000d;
+		this.walletBalance = 1000;
 	}
 
-	public void decrementAccountBy(double salePrice) {
+	public void decrementAccountBy(long salePrice) {
 		walletBalance -= salePrice;
 	}
 
-	public void incrementAccountBy(double salePrice) {
+	public void incrementAccountBy(long salePrice) {
 		walletBalance += salePrice;
 	}
 
