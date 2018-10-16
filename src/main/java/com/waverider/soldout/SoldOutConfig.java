@@ -6,7 +6,10 @@ import java.io.InputStream;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
+import com.hedera.sdk.account.HederaAccount;
 import com.hedera.sdk.common.HederaAccountID;
+import com.hedera.sdk.common.HederaDuration;
+import com.hedera.sdk.common.HederaTransactionAndQueryDefaults;
 import com.hedera.sdk.common.HederaKey.KeyType;
 import com.hedera.sdk.cryptography.HederaCryptoKeyPair;
 import com.hedera.sdk.node.HederaNode;
@@ -92,4 +95,40 @@ public class SoldOutConfig {
 	public HederaCryptoKeyPair getRootKeyPair() throws InvalidKeySpecException {
 		return new HederaCryptoKeyPair(KeyType.ED25519, rootPubKey, rootPrivKey);
 	}
+
+	public HederaAccount getRootAccount() throws InvalidKeySpecException
+	{
+		HederaAccount account = new HederaAccount();
+		account.txQueryDefaults = getDefaultHederaTransactionAndQueryDefaults("Root Account");
+		account.setHederaAccountID(getRootAccountId());
+		account.setNode(getHederaNode());
+		return account;
+	}
+
+	public HederaAccountID getAccountId(int id) {
+		return new HederaAccountID(nodeAccountShard, nodeAccountRealm, accountNumber[id]);
+	}
+
+	public HederaCryptoKeyPair getAccountKeyPair(int id) throws InvalidKeySpecException {
+		return new HederaCryptoKeyPair(KeyType.ED25519, accountPublicKey[id], accountPrivateKey[id]);
+	}
+
+	public HederaAccount getAccount(int id) throws InvalidKeySpecException
+	{
+		HederaAccount account = new HederaAccount();
+		account.txQueryDefaults = getDefaultHederaTransactionAndQueryDefaults("Account " + id);
+		account.setHederaAccountID(getAccountId(id));
+		return account;
+	}
+
+	public HederaTransactionAndQueryDefaults getDefaultHederaTransactionAndQueryDefaults(String memo) throws InvalidKeySpecException {
+		HederaTransactionAndQueryDefaults txQueryDefaults = new HederaTransactionAndQueryDefaults();
+			txQueryDefaults.memo = memo;
+			txQueryDefaults.node = getHederaNode();
+			txQueryDefaults.payingAccountID = getRootAccountId();
+			txQueryDefaults.payingKeyPair = getRootKeyPair();
+			txQueryDefaults.transactionValidDuration = new HederaDuration(120, 0);
+		return txQueryDefaults;
+	}
+
 }
