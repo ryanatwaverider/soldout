@@ -85,7 +85,8 @@ public class SoldOutConfig {
 	}
 
 	public HederaNode getHederaNode() {
-		return new HederaNode(nodeAddress, nodePort, new HederaAccountID(nodeAccountShard, nodeAccountRealm, nodeAccountNum));
+		return new HederaNode(nodeAddress, nodePort,
+				new HederaAccountID(nodeAccountShard, nodeAccountRealm, nodeAccountNum));
 	}
 
 	public HederaAccountID getRootAccountId() {
@@ -96,12 +97,15 @@ public class SoldOutConfig {
 		return new HederaCryptoKeyPair(KeyType.ED25519, rootPubKey, rootPrivKey);
 	}
 
-	public HederaAccount getRootAccount() throws InvalidKeySpecException
-	{
+	public HederaAccount getRootAccount() throws InvalidKeySpecException {
 		HederaAccount account = new HederaAccount();
-		account.txQueryDefaults = getDefaultHederaTransactionAndQueryDefaults("Root Account");
-		account.setHederaAccountID(getRootAccountId());
-		account.setNode(getHederaNode());
+		account.txQueryDefaults = new HederaTransactionAndQueryDefaults();
+		account.txQueryDefaults.memo = "Root Account";
+		account.txQueryDefaults.node = getHederaNode();
+		account.txQueryDefaults.payingAccountID = getRootAccountId();
+		account.txQueryDefaults.payingKeyPair = getRootKeyPair();
+		account.txQueryDefaults.transactionValidDuration = new HederaDuration(120, 0);
+		account.setHederaAccountID(account.txQueryDefaults.payingAccountID);
 		return account;
 	}
 
@@ -113,22 +117,15 @@ public class SoldOutConfig {
 		return new HederaCryptoKeyPair(KeyType.ED25519, accountPublicKey[id], accountPrivateKey[id]);
 	}
 
-	public HederaAccount getAccount(int id) throws InvalidKeySpecException
-	{
+	public HederaAccount getAccount(int id) throws InvalidKeySpecException {
 		HederaAccount account = new HederaAccount();
-		account.txQueryDefaults = getDefaultHederaTransactionAndQueryDefaults("Account " + id);
-		account.setHederaAccountID(getAccountId(id));
+		account.txQueryDefaults = new HederaTransactionAndQueryDefaults();
+		account.txQueryDefaults.memo = "Account " + id;
+		account.txQueryDefaults.node = getHederaNode();
+		account.txQueryDefaults.payingAccountID = getAccountId(id);
+		account.txQueryDefaults.payingKeyPair = getAccountKeyPair(id);
+		account.txQueryDefaults.transactionValidDuration = new HederaDuration(120, 0);
+		account.setHederaAccountID(account.txQueryDefaults.payingAccountID);
 		return account;
 	}
-
-	public HederaTransactionAndQueryDefaults getDefaultHederaTransactionAndQueryDefaults(String memo) throws InvalidKeySpecException {
-		HederaTransactionAndQueryDefaults txQueryDefaults = new HederaTransactionAndQueryDefaults();
-			txQueryDefaults.memo = memo;
-			txQueryDefaults.node = getHederaNode();
-			txQueryDefaults.payingAccountID = getRootAccountId();
-			txQueryDefaults.payingKeyPair = getRootKeyPair();
-			txQueryDefaults.transactionValidDuration = new HederaDuration(120, 0);
-		return txQueryDefaults;
-	}
-
 }
