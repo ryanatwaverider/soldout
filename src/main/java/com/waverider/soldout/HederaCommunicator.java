@@ -1,3 +1,4 @@
+// (C) Copyright Waverider LLC, 2018
 package com.waverider.soldout;
 
 import java.security.spec.InvalidKeySpecException;
