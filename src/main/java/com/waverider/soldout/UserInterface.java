@@ -40,7 +40,8 @@ public class UserInterface extends JFrame implements SoldOutEntityUpdateSubscrib
 		venueDisplayTable.setFont(f);
 		venueDisplayTable.setGridColor(Color.gray);
 		
-		venueDisplayTable.setDefaultRenderer(String.class, new TicketSaleRenderer());
+		venueDisplayTable.setDefaultRenderer(AccessTokenDisplay.class, new TicketSaleRenderer());
+//		venueDisplayTable.setDefaultRenderer(String.class, new TicketSaleRenderer());
 
 		
 		JPanel contentPane = new JPanel(new BorderLayout());

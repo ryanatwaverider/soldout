@@ -21,30 +21,47 @@ public class AccountBalanceScreen extends JFrame implements SoldOutEntityUpdateS
 	
 	private HashMap<String,JLabel> balanceLabels = new HashMap<String,JLabel>();
 	
+	ArrayList<Color> colors = new ArrayList<Color>();
+	
+	
 	private Font font = new Font("Arial", Font.BOLD, 16);
 	public AccountBalanceScreen(Collection<TokenOwner> tokenOwners) {
 		super("Account Balances");
 		
+		colors.add(Color.LIGHT_GRAY);
+		colors.add(Color.RED);
+		colors.add(Color.ORANGE);
+		colors.add(Color.GREEN);
+		colors.add(Color.YELLOW);
+		colors.add(Color.cyan);
+		colors.add(Color.PINK);
+
 		
 		JPanel ownerPanel = new JPanel();
 		ownerPanel.setLayout(new GridLayout(tokenOwners.size(),2,2,2));
 		for (TokenOwner token : tokenOwners) {
+//			JLabel colorLabel = new JLabel("   ");
+//			colorLabel.setOpaque(true);
+//			colorLabel.setBackground(colors.get(token.getWalletId()));
+//			ownerPanel.add(colorLabel);
+
 			JLabel lbl = new JLabel(token.getIdentity());
 			lbl.setOpaque(true);
 			lbl.setFont(font);
 			ownerPanel.add(lbl);
-			lbl.setBackground(Color.orange);
-			lbl.setForeground(Color.BLUE);
+			lbl.setBackground(colors.get(token.getWalletId()));
+//			lbl.setForeground(Color.BLUE);
 
 			JLabel balanceLabel = new JLabel("H:"+token.getWalletBalance());
 			balanceLabel.setFont(font);
-			balanceLabel.setBackground(Color.orange);
-			balanceLabel.setForeground(Color.BLUE);
+			balanceLabel.setBackground(colors.get(token.getWalletId()));
+//			balanceLabel.setForeground(Color.BLUE);
 			balanceLabel.setOpaque(true);
 
 
 			balanceLabels.put(token.getIdentity(),balanceLabel);
 			ownerPanel.add(balanceLabel);
+			
 		}
 		
 		this.setContentPane(ownerPanel);

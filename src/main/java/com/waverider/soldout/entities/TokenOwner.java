@@ -52,4 +52,8 @@ public class TokenOwner extends SoldOutEntity {
 			return false;
 		}
 	}
+
+	public int getWalletId() {
+		return walletId;
+	}
 }

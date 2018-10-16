@@ -24,7 +24,8 @@ public class VenueTableModel extends AbstractTableModel implements SoldOutEntity
 	}
 	
 	public Class getColumnClass(int c) {
-        return String.class;
+        return AccessTokenDisplay.class;
+//        return String.class;
       }
 
 	@Override
@@ -46,16 +47,25 @@ public class VenueTableModel extends AbstractTableModel implements SoldOutEntity
 		
 		EventAccessToken token = rowList.get(columnIndex);
 
+		AccessTokenDisplay td = new AccessTokenDisplay();
+
 		AccessTokenListing listing = globalInfoProvider.getListingFor(token.getId());
 		if (listing!=null) {
-			return "L: H:" + listing.getListingPrice();
+			td.isListing=true;
+			td.ownerId=token.getCurrentOwner().getWalletId();
+			td.value = listing.getListingPrice();
+			return td;
+//			return "L: H:" + listing.getListingPrice();
 		}
 
 		if (token.getLastSalePrice()!=null) {
-			return "S: H:" + token.getLastSalePrice();
+			td.isListing=false;
+			td.ownerId=token.getCurrentOwner().getWalletId();
+			td.value = token.getLastSalePrice();
+//			return "S: H:" + token.getLastSalePrice();
 		}
 		
-		return "";
+		return td;
 	}
 	
 	ArrayList<ArrayList<EventAccessToken>> tokenListsForRow = new ArrayList<ArrayList<EventAccessToken>>();
