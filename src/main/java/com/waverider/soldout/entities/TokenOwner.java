@@ -1,8 +1,10 @@
 package com.waverider.soldout.entities;
 
+import com.waverider.soldout.HederaCommunicator;
+
 import io.protostuff.Tag;
 
-public class TokenOwner extends SoldOutEntity  {
+public class TokenOwner extends SoldOutEntity {
 
 	public String getIdentity() {
 		return identity;
@@ -10,31 +12,33 @@ public class TokenOwner extends SoldOutEntity  {
 
 	@Tag(100)
 	final private String identity;
-	
-	@Tag(101)
-	long walletBalance;
+
+	final private int walletId;
+	final private HederaCommunicator communicator;
 
 	public long getWalletBalance() {
-		return walletBalance;
+		try {
+			return communicator.getWalletBallance(walletId);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
-	public void setWalletBalance(long walletBalance) {
-		this.walletBalance = walletBalance;
-	}
-
-	public TokenOwner(String identity) {
+	public TokenOwner(String identity, int walletId, HederaCommunicator communicator) {
 		super(EntityType.TOKEN_OWNER);
 		this.identity = identity;
-		this.walletBalance = 1000;
+		this.walletId = walletId;
+		this.communicator = communicator;
 	}
 
-	public void decrementAccountBy(long salePrice) {
-		walletBalance -= salePrice;
+	public boolean send(TokenOwner seller, long salePrice) {
+		try {
+			communicator.send(this.walletId, seller.walletId, salePrice);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
-
-	public void incrementAccountBy(long salePrice) {
-		walletBalance += salePrice;
-	}
-
-
 }

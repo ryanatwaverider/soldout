@@ -73,7 +73,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		public void run(){
 			if (isBuyer && (lastEvent!=Event.BUY || 
 					(profile.equals("Professional") && ownedTokens.size()<20) ||
-					(ownedTokens.size()<5)) && tokenOwner.getWalletBalance()>100.0d){
+					(ownedTokens.size()<5)) && tokenOwner.getWalletBalance()>100){
 				AccessTokenListing listing = informationRelayer.getRandomListing();
 //				EventAccessToken accessToken = informationRelayer.getAccessTokenFor(listing.getEventId(), listing.getEventAccessTokenId());
 				AccessTokenSale sale = informationRelayer.purchaseListing(listing, tokenOwner);
