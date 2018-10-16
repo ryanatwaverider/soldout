@@ -51,6 +51,10 @@ public class ChronicleWriter {
 	    try
 	    {
 	        protostuff = ProtostuffIOUtil.toByteArray(entity, soldOutEntitySchema, buffer);
+	        
+//	        SoldOutEntityUpdate soe =  soldOutEntitySchema.newMessage();
+//		    ProtostuffIOUtil.mergeFrom(protostuff, soe, soldOutEntitySchema);
+		    
 	        excerpt.startExcerpt(protostuff.length);
 			excerpt.write(protostuff,0,protostuff.length);
 			excerpt.finish();
@@ -67,9 +71,10 @@ public class ChronicleWriter {
 		
 		while (excerpt.nextIndex()){
 			count++;
-			excerpt.read(bytes);
+			int nBytes = excerpt.read(bytes);
+			logger.info("Object size is " + nBytes);
 			SoldOutEntityUpdate soe =  soldOutEntitySchema.newMessage();
-		    ProtostuffIOUtil.mergeFrom(bytes, soe, soldOutEntitySchema);
+		    ProtostuffIOUtil.mergeFrom(bytes, 0,nBytes, soe, soldOutEntitySchema);
 		    s.onMessage(soe);
 		}
 	}

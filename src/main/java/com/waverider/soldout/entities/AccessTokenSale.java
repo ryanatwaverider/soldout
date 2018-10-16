@@ -1,17 +1,40 @@
 package com.waverider.soldout.entities;
 
+import io.protostuff.Tag;
+
 public class AccessTokenSale extends SoldOutEntity {
 
+	@Tag(20)
 	private final TokenOwner buyer;
+	
+	@Tag(21)
 	private final TokenOwner seller;
+	
+	@Tag(22)
 	private final double salePrice;
+	
+	@Tag(23)
+	private final String tokenId;
+	
+	@Tag(24)
+	private final String eventId;
 
-	public AccessTokenSale(TokenOwner buyer, TokenOwner currentOwner, double listingPrice) {
+	public String getTokenId() {
+		return tokenId;
+	}
+
+	public String getEventId() {
+		return eventId;
+	}
+
+	public AccessTokenSale(TokenOwner buyer, TokenOwner currentOwner, double listingPrice, String tokenId, String eventId) {
 		super(EntityType.ACCESS_TOKEN_SALE);
 		
 		this.buyer = buyer;
 		this.seller = currentOwner;
 		this.salePrice = listingPrice;
+		this.tokenId = tokenId;
+		this.eventId = eventId;
 	}
 
 	public TokenOwner getBuyer() {

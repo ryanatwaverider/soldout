@@ -1,7 +1,10 @@
 package com.waverider.soldout.entities;
 
-public class SoldOutEntity {
+import io.protostuff.Tag;
 
+public abstract class SoldOutEntity {
+
+	@Tag(10)
 	EntityType entityType;
 	
 	public EntityType getEntityType() {

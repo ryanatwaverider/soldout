@@ -3,8 +3,11 @@ package com.waverider.soldout.messages;
 import com.waverider.soldout.entities.EntityType;
 import com.waverider.soldout.entities.SoldOutEntity;
 
+import io.protostuff.Tag;
+
 public class SoldOutEntityUpdate {
 
+	@Tag(2)
 	private ActionType actionType;
 	
 	public ActionType getActionType() {
@@ -27,15 +30,18 @@ public class SoldOutEntityUpdate {
 
 	public static long NEXT_SEQUENCE_NUMBER = 0l;
 	
+	@Tag(3)
 	private long sequenceNumber;
 
+	@Tag(4)
 	private SoldOutEntity entity;
 
 	public SoldOutEntityUpdate(SoldOutEntity entity, ActionType actionType){
 		this.entity = entity;
+		this.actionType = actionType;
 		this.setSequence();
 	}
-
+	
 	public SoldOutEntityUpdate() {
 	}
 

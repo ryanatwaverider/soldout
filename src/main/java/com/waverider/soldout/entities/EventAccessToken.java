@@ -2,6 +2,8 @@ package com.waverider.soldout.entities;
 
 import java.util.ArrayList;
 
+import io.protostuff.Tag;
+
 
 public class EventAccessToken extends SoldOutEntity {
 
@@ -29,17 +31,38 @@ public class EventAccessToken extends SoldOutEntity {
 		return area;
 	}
 
+	@Tag(20)
 	final private String eventId;
+	
+	@Tag(21)
 	final private int row;
+
+	@Tag(22)
 	final private int seat;
+	
+	@Tag(23)
 	final private String area;
+	
+	@Tag(24)
 	final private String id;
+	
+	@Tag(25)
 	private TokenOwner currentOwner;
+	
+	@Tag(26)
 	private int listingIdCount;
 	
+	@Tag(27)
 	private ArrayList<AccessTokenSale> saleChain = new ArrayList<AccessTokenSale>();
+	
+	
+	@Tag(28)
 	private double firstSalePrice;
+	
+	@Tag(29)
 	private AccessTokenSale lastSale;	
+	
+	@Tag(30)
 	private final TokenOwner vendor;
 	
 
@@ -76,7 +99,7 @@ public class EventAccessToken extends SoldOutEntity {
 			return null;
 		}
 		
-		AccessTokenSale sale = new AccessTokenSale(buyer,currentOwner,listing.getListingPrice());
+		AccessTokenSale sale = new AccessTokenSale(buyer,currentOwner,listing.getListingPrice(),this.getId(),this.getEventId());
 		if (saleChain.isEmpty()){
 			firstSalePrice = listing.getListingPrice();
 		}

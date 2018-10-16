@@ -1,13 +1,17 @@
 package com.waverider.soldout.entities;
 
-public class TokenOwner extends SoldOutEntity {
+import io.protostuff.Tag;
+
+public class TokenOwner extends SoldOutEntity  {
 
 	public String getIdentity() {
 		return identity;
 	}
 
+	@Tag(100)
 	final private String identity;
 	
+	@Tag(101)
 	double walletBalance;
 
 	public double getWalletBalance() {
@@ -20,8 +24,17 @@ public class TokenOwner extends SoldOutEntity {
 
 	public TokenOwner(String identity) {
 		super(EntityType.TOKEN_OWNER);
-		
 		this.identity = identity;
+		this.walletBalance = 1000d;
 	}
+
+	public void decrementAccountBy(double salePrice) {
+		walletBalance -= salePrice;
+	}
+
+	public void incrementAccountBy(double salePrice) {
+		walletBalance += salePrice;
+	}
+
 
 }

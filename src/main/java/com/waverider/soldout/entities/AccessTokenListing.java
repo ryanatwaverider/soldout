@@ -2,6 +2,8 @@ package com.waverider.soldout.entities;
 
 import com.waverider.soldout.messages.ActionType;
 
+import io.protostuff.Tag;
+
 public class AccessTokenListing extends SoldOutEntity{
 
 	public String getEventAccessTokenId() {
@@ -21,9 +23,16 @@ public class AccessTokenListing extends SoldOutEntity{
 	}
 
 
+	@Tag(200)
 	private final String eventAccessTokenId;
+
+	@Tag(201)
 	private final String eventId;
+	
+	@Tag(202)
 	private final double listingPrice;
+	
+	@Tag(203)
 	private final int listingId;
 
 	public AccessTokenListing(int listingId, String eventId, String eventAccessTokenId, double price) {
