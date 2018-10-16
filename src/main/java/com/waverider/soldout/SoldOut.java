@@ -60,6 +60,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			public void run() {
 				userInterface = new UserInterface(SoldOut.this);
 				userInterface.pack();
+				
 			}
 		});
 //		SwingUtilities.invokeLater(new Runnable() {
@@ -95,6 +96,7 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		LiveEvent event = so.createEvent();
 		so.createSeatsAndListings(event, communicator);
 		so.createTokenOwners(communicator);
+		
 		
 		
 		so.startSimulation();
@@ -140,10 +142,19 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		sim = new UserSimulator(to,this,"Professional");
 		updateSubscribers.add(sim);
 
-		to = new TokenOwner("Betty",5,communicator);
-		tokenOwners.put(to.getIdentity(),to);
-		sim = new UserSimulator(to,this,"Speculator");
-		updateSubscribers.add(sim);
+//		to = new TokenOwner("Betty",5,communicator);
+//		tokenOwners.put(to.getIdentity(),to);
+//		sim = new UserSimulator(to,this,"Speculator");
+//		updateSubscribers.add(sim);
+		
+		
+		AccountBalanceScreen accountBalanceScreen = new AccountBalanceScreen(tokenOwners.values());
+		updateSubscribers.add(accountBalanceScreen);
+		
+		accountBalanceScreen.pack();
+		accountBalanceScreen.setLocation(300, 20);
+		accountBalanceScreen.setVisible(true);
+
 	}
 
 	private void fetchEventsAndListings(LiveEvent event) throws IOException {
@@ -247,11 +258,11 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 			{
 				return false;
 			}
-			try {
-				Thread.sleep(1001);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(1001);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			return transferMoney(sale.getBuyer(),token.getVendor(),vendorAmt);
 		}
 		else {
