@@ -57,7 +57,7 @@ public class EventAccessToken extends SoldOutEntity {
 	
 	
 	@Tag(28)
-	private double firstSalePrice;
+	private long firstSalePrice;
 	
 	@Tag(29)
 	private AccessTokenSale lastSale;	
@@ -86,7 +86,7 @@ public class EventAccessToken extends SoldOutEntity {
 		return id;
 	}
 	
-	public AccessTokenListing createListing(TokenOwner ownershipKey, double price){
+	public AccessTokenListing createListing(TokenOwner ownershipKey, long price){
 		if (!ownershipKey.getIdentity().equals(currentOwner.getIdentity())){
 			return null;
 		}
@@ -115,11 +115,11 @@ public class EventAccessToken extends SoldOutEntity {
 		return saleChain;
 	}
 
-	public double getFirstSalePrice() {
+	public long getFirstSalePrice() {
 		return firstSalePrice;
 	}
 
-	public Double getLastSalePrice() {
+	public Long getLastSalePrice() {
 		if (lastSale==null){
 			return null;
 		}

@@ -40,7 +40,7 @@ public class CreateDemoAccounts {
 					accountCreateDefaults);
 			HederaPrecheckResult precheckResult = createResult.getPrecheckResult();
 			if (precheckResult == HederaPrecheckResult.OK) {
-				HederaTransactionReceipt receipt = Utilities.getReceipt(myNewAccount.hederaTransactionID,
+				HederaTransactionReceipt receipt = Utilities.getReceipt(createResult.hederaTransactionID,
 						myNewAccount.txQueryDefaults.node);
 				if (receipt.transactionStatus == HederaTransactionStatus.SUCCESS) {
 

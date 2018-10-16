@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import com.hedera.sdk.account.HederaAccount;
+import com.hedera.sdk.common.HederaAccountID;
 import com.hedera.sdk.common.HederaPrecheckResult;
 import com.hedera.sdk.common.HederaTransactionReceipt;
 import com.hedera.sdk.common.HederaTransactionStatus;
@@ -17,22 +18,28 @@ public class ResetBalances {
 		System.out.println("Resetting Demo Account Balances");
 		SoldOutConfig config = new SoldOutConfig();
 		for (int i = 0; i < config.accountNumber.length; i++) {
-			HederaAccount account = config.getAccount(i);
-			long balance = account.getBalance();
-			System.out.println(String.format("Account %d (%d) has Balance %d", i,
-					account.getHederaAccountID().accountNum, balance));
-			Thread.sleep(1000);
+			long balance = config.getAccount(i).getBalance();
+			System.out.println(String.format("Account %d (%d) has Balance %d", i,config.getAccountId(i).accountNum, balance));
+			Thread.sleep(1001);
 			long diff = balance - config.initialBalance;
 			if (diff != 0) {
-				HederaTransactionResult transferResult = (diff > 0) ? account.send(config.getRootAccountId(), diff)
-						: config.getRootAccount().send(config.getAccountId(i), -diff);
-
-				if (transferResult.getPrecheckResult() != HederaPrecheckResult.OK) {
-					throw new Exception(
-							"Failed with getPrecheckResult:" + transferResult.getPrecheckResult().toString());
+				long amount;
+				HederaAccount fromAccount;
+				HederaAccountID toAccount;
+				if(diff > 0){
+					amount = diff;
+					fromAccount = config.getAccount(i);
+					toAccount = config.getRootAccountId();
+				} else {
+					amount = -diff;
+					fromAccount = config.getRootAccount();
+					toAccount = config.getAccountId(i);
 				}
-				HederaTransactionReceipt receipt = Utilities.getReceipt(account.hederaTransactionID,
-						account.txQueryDefaults.node);
+				HederaTransactionResult transferResult = fromAccount.send(toAccount, amount);  				
+				if (transferResult.getPrecheckResult() != HederaPrecheckResult.OK) {
+					throw new Exception("Failed with getPrecheckResult:" + transferResult.getPrecheckResult().toString());
+				}
+				HederaTransactionReceipt receipt = Utilities.getReceipt(transferResult.hederaTransactionID,fromAccount.txQueryDefaults.node);
 				if (receipt.transactionStatus != HederaTransactionStatus.SUCCESS) {
 					throw new Exception("Failed with transaction result: " + receipt.transactionStatus);
 				}
@@ -40,8 +47,7 @@ public class ResetBalances {
 				balance = config.getAccount(i).getBalance();
 			}
 			balances.put((long) i, balance);
-			System.out.println(String.format("Account %d (%d) now has Balance %d", i,
-					account.getHederaAccountID().accountNum, balance));
+			System.out.println(String.format("Account %d now has Balance %d", i,balance));
 			Thread.sleep(1001);
 		}
 		for (Entry<Long, Long> entry : balances.entrySet()) {

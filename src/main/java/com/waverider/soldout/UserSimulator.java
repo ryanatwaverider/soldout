@@ -75,7 +75,7 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 		public void run(){
 			if (isBuyer && (lastEvent!=Event.BUY || 
 					(profile.equals("Professional") && ownedTokens.size()<20) ||
-					(ownedTokens.size()<3)) && tokenOwner.getWalletBalance()>150.0d){
+					(ownedTokens.size()<3)) && tokenOwner.getWalletBalance()>150){
 				AccessTokenListing listing = informationRelayer.getRandomListing();
 //				EventAccessToken accessToken = informationRelayer.getAccessTokenFor(listing.getEventId(), listing.getEventAccessTokenId());
 				AccessTokenSale sale = informationRelayer.purchaseListing(listing, tokenOwner);
@@ -92,11 +92,11 @@ public class UserSimulator implements SoldOutEntityUpdateSubscriber {
 					
 					EventAccessToken token = ownedTokens.get(tokenId);
 					if (isSellerForProfit){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*1.3));
+						informationRelayer.publishListing(token.createListing(tokenOwner, (long)((double)token.getLastSalePrice()*1.3)));
 						lastEvent = Event.SELLFORPROFIT;
 					}
 					else if (isSellerForLoss){
-						informationRelayer.publishListing(token.createListing(tokenOwner, token.getLastSalePrice()*.7));
+						informationRelayer.publishListing(token.createListing(tokenOwner, (long)((double)token.getLastSalePrice()*.7)));
 						lastEvent = Event.SELLFORLOSS;
 					}
 				}

@@ -89,11 +89,12 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
        // handle exception
     }
 
-		
+		SoldOutConfig config = new SoldOutConfig();
+		HederaCommunicator communicator = new HederaCommunicator(config);
 		SoldOut so = new SoldOut();
 		LiveEvent event = so.createEvent();
-		so.createSeatsAndListings(event);
-		so.createTokenOwners();
+		so.createSeatsAndListings(event, communicator);
+		so.createTokenOwners(communicator);
 		
 		
 		so.startSimulation();
@@ -117,29 +118,29 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		}
 	}
 
-	private void createTokenOwners() {
+	private void createTokenOwners(HederaCommunicator communicator) {
 		// TODO Auto-generated method stub
-		TokenOwner to = new TokenOwner("Alice");
+		TokenOwner to = new TokenOwner("Alice",1,communicator);
 		tokenOwners.put(to.getIdentity(),to);
 		UserSimulator sim = new UserSimulator(to,this,"Speculator");
 		updateSubscribers.add(sim);
 		
-		to = new TokenOwner("TicketScam");
+		to = new TokenOwner("TicketScam",2,communicator);
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Professional");
 		updateSubscribers.add(sim);
 
-		to = new TokenOwner("Bob");
+		to = new TokenOwner("Bob",3,communicator);
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Attendee");
 		updateSubscribers.add(sim);
 
-		to = new TokenOwner("ScalperJoe");
+		to = new TokenOwner("ScalperJoe",4,communicator);
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Professional");
 		updateSubscribers.add(sim);
 
-		to = new TokenOwner("Betty");
+		to = new TokenOwner("Betty",5,communicator);
 		tokenOwners.put(to.getIdentity(),to);
 		sim = new UserSimulator(to,this,"Speculator");
 		updateSubscribers.add(sim);
@@ -173,25 +174,23 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		return event;
 	}
 	
-	private void createSeatsAndListings(LiveEvent event) {
+	private void createSeatsAndListings(LiveEvent event, HederaCommunicator communicator) {
 		
-		TokenOwner owner = new TokenOwner("Vendor_UC_Chicago");
+		TokenOwner owner = new TokenOwner("Vendor_UC_Chicago",0,communicator);
 		theVendor = owner;
 		tokenOwners.put(owner.getIdentity(),owner);
 
 		String level = "Floor";
-		createSeatsForEvent(event,level,maxRowCount,2,10, owner, 75.0d);
-
+		createSeatsForEvent(event,level,maxRowCount,2,10, owner, 75);
 		level = "Main";
-		createSeatsForEvent(event,level,maxRowCount,4,10, owner, 50.0d);
-		
+		createSeatsForEvent(event,level,maxRowCount,4,10, owner, 50);
 		level = "Balcony";
-		createSeatsForEvent(event,level, maxRowCount,3,10, owner, 25.0d);
+		createSeatsForEvent(event,level, maxRowCount,3,10, owner, 25);
 	}
 
 	int maxRowCount=0;
 	private void createSeatsForEvent(LiveEvent event, String level,int firstRow, int rows, int seats, 
-			TokenOwner initialOwner, double listingPrice) {
+			TokenOwner initialOwner, long listingPrice) {
 		EventAccessToken token;
 
 		HashMap<String, EventAccessToken> tokens = tokensByEvent.get(event.getId());
@@ -229,37 +228,40 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		sendUpdateToSubscribers(listing,ActionType.CREATE_ENTITY);
 	}
 	
-	
 	private final double VENDOR_SPLIT_PERCENT = 0.5d;
 
 	private Random random;
 
-	private void doMoneyTranfersForSale(AccessTokenSale sale, EventAccessToken token) {
+	private boolean doMoneyTranfersForSale(AccessTokenSale sale, EventAccessToken token) {
 		// First take would be to give all the money to the seller, but then the magic 
 		// comes in
-		double lastSalePrice = token.getLastSalePrice();
-		double salePrice = sale.getSalePrice();
+		long lastSalePrice = token.getLastSalePrice();
+		long salePrice = sale.getSalePrice();
 		
-		double profit = salePrice-lastSalePrice;
-		double basis = lastSalePrice;
+		long profit = salePrice-lastSalePrice;
+		long basis = lastSalePrice;
 		if (profit>0.0d){
-			double vendorAmt = profit*VENDOR_SPLIT_PERCENT; // this is variable
-			double sellerAmt = salePrice - vendorAmt;
-			transferMoney(sale.getBuyer(),sale.getSeller(),basis+sellerAmt);
-			transferMoney(sale.getBuyer(),token.getVendor(),vendorAmt);
+			long vendorAmt = (long)((double)profit*VENDOR_SPLIT_PERCENT); // this is variable
+			long sellerAmt = salePrice - vendorAmt;
+			if(!transferMoney(sale.getBuyer(),sale.getSeller(),basis+sellerAmt))
+			{
+				return false;
+			}
+			try {
+				Thread.sleep(1001);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return transferMoney(sale.getBuyer(),token.getVendor(),vendorAmt);
 		}
 		else {
-			transferMoney(sale.getBuyer(),sale.getSeller(),salePrice);
+			return transferMoney(sale.getBuyer(),sale.getSeller(),salePrice);
 		}
 		
 	}
 
-	private void transferMoney(TokenOwner buyer, TokenOwner seller, double salePrice) {
-		// TODO move money between accounts
-		// this is a hedera thing
-		buyer.decrementAccountBy(salePrice);
-		seller.incrementAccountBy(salePrice);
-		
+	private boolean transferMoney(TokenOwner buyer, TokenOwner seller, long salePrice) {
+		return buyer.send(seller,salePrice);
 	}
 
 	public void onMessage(SoldOutEntityUpdate message) {
@@ -330,8 +332,10 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 				return null;
 			}
 			
-			doMoneyTranfersForSale(sale, token);
-
+			if(!doMoneyTranfersForSale(sale, token)){
+				logger.warn(sale.getBuyer().getIdentity() + " could not transfer money");
+				return null;
+			}
 			listingsByAccessToken.remove(listing.getEventAccessTokenId());
 
 			sendUpdateToSubscribers(sale,ActionType.CREATE_ENTITY);
