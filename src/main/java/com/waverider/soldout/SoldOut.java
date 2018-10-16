@@ -142,10 +142,10 @@ public class SoldOut implements ChronicleSubscriber, GlobalInformationProvider {
 		sim = new UserSimulator(to,this,"Professional");
 		updateSubscribers.add(sim);
 
-//		to = new TokenOwner("Betty",5,communicator);
-//		tokenOwners.put(to.getIdentity(),to);
-//		sim = new UserSimulator(to,this,"Speculator");
-//		updateSubscribers.add(sim);
+		to = new TokenOwner("Betty",5,communicator);
+		tokenOwners.put(to.getIdentity(),to);
+		sim = new UserSimulator(to,this,"Speculator");
+		updateSubscribers.add(sim);
 		
 		
 		AccountBalanceScreen accountBalanceScreen = new AccountBalanceScreen(tokenOwners.values());

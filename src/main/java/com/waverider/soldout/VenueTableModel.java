@@ -48,11 +48,11 @@ public class VenueTableModel extends AbstractTableModel implements SoldOutEntity
 
 		AccessTokenListing listing = globalInfoProvider.getListingFor(token.getId());
 		if (listing!=null) {
-			return "L: $" + listing.getListingPrice();
+			return "L: H:" + listing.getListingPrice();
 		}
 
 		if (token.getLastSalePrice()!=null) {
-			return "S: $" + token.getLastSalePrice();
+			return "S: H:" + token.getLastSalePrice();
 		}
 		
 		return "";
