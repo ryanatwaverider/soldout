@@ -1,0 +1,30 @@
+
+<configuration debug="false" scan="true" scanPeriod="20 seconds">
+    
+    <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>logs/soldout.log</file>
+        <encoder>
+            <pattern>%date|%r|%level|%thread|%logger|%msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>%date|%-5.5level|%-10.15thread|%-30.30logger| %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    
+    <logger name="com.waverider.soldout" level="INFO"/>
+    <logger name="com.hedera.sdk.node" level="WARN"/>
+    
+    <root level="WARN">
+        <appender-ref ref="file"/>
+        <appender-ref ref="console"/>
+        
+    </root>
+</configuration>
