@@ -1,4 +1,6 @@
-// (C) Copyright Waverider LLC, 2018
+/**
+ * (C) Copyright Waverider LLC, 2018
+ */
 package com.waverider.soldout.messages;
 
 import com.waverider.soldout.entities.EntityType;

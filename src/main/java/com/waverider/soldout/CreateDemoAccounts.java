@@ -1,4 +1,6 @@
-// (C) Copyright Waverider LLC, 2018
+/**
+ * (C) Copyright Waverider LLC, 2018
+ */
 package com.waverider.soldout;
 
 import java.security.spec.InvalidKeySpecException;
@@ -21,9 +23,9 @@ public class CreateDemoAccounts {
 		System.out.println("Creating Demo Account IDs");
 		SoldOutConfig config = new SoldOutConfig();
 		for (int i = 0; i < config.accountNumber.length; i++) {
-			if(config.accountNumber[i]> 0){
-				continue;
-			}
+//			if(config.accountNumber[i]> 0){
+//				continue;
+//			}
 			HederaTransactionAndQueryDefaults txQueryDefaults = new HederaTransactionAndQueryDefaults();
 			txQueryDefaults.memo = "Creating Demo Account";
 			txQueryDefaults.node = config.getHederaNode();
